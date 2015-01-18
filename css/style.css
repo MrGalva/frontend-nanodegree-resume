@@ -177,6 +177,10 @@ span {
   padding-left: 10px;
 }
 
+.green {
+  color: #00CC00;
+}
+
 @media only screen and (max-width: 1024px) {
   #letsConnect {
     margin-top: 5%;
