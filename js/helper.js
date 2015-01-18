@@ -85,7 +85,8 @@ function logClicks(x,y) {
 }
 
 $(document).click(function(loc) {
-  // your code goes here!
+  //call function to show clicks location on console:
+  logClicks(loc.pageX, loc.pageY);
 });
 
 
@@ -120,22 +121,26 @@ function initializeMap() {
   */
   function locationFinder() {
 
-    // initializes an empty array
-    var locations = [];
+    // initializes an obj with 3 empity arrays
+    var locations = {
+      "house": [],
+      "job": [],
+      "school": []
+    };
 
     // adds the single location property from bio to the locations array
-    locations.push(bio.contacts.location);
+    locations.house.push(bio.contacts.location);
 
     // iterates through school locations and appends each location to
     // the locations array
     for (var school in education.schools) {
-      locations.push(education.schools[school].location);
+      locations.school.push(education.schools[school].location);
     }
 
     // iterates through work locations and appends each location to
     // the locations array
     for (var job in work.jobs) {
-      locations.push(work.jobs[job].location);
+      locations.job.push(work.jobs[job].location);
     }
 
     return locations;
@@ -146,7 +151,7 @@ function initializeMap() {
   placeData is the object returned from search results containing information
   about a single location.
   */
-  function createMapMarker(placeData) {
+  function createMapMarker(placeData, type) {
 
     // The next lines save location data from the search result object to local variables
     var lat = placeData.geometry.location.lat();  // latitude from the place service
@@ -154,11 +159,23 @@ function initializeMap() {
     var name = placeData.formatted_address;   // name of the place from the place service
     var bounds = window.mapBounds;            // current boundaries of the map window
 
+    // inizialize default icon
+    var image = "http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png";
+    // icon for the house location
+    if(type == "house") {
+      image = "http://maps.google.com/mapfiles/kml/pal2/icon10.png";
+    }
+    // icon for jobs
+    if(type == "job") {
+      image = "http://www.google.com/intl/en_us/mapfiles/ms/micons/green-dot.png";
+    }
+
     // marker is an object with additional data about the pin for a single location
     var marker = new google.maps.Marker({
       map: map,
       position: placeData.geometry.location,
-      title: name
+      title: name,
+      icon: image //add icon variable
     });
 
     // infoWindows are the little helper windows that open when you click
@@ -170,7 +187,8 @@ function initializeMap() {
 
     // hmmmm, I wonder what this is about...
     google.maps.event.addListener(marker, 'click', function() {
-      // your code goes here!
+      // I call infoWindow open function
+      infoWindow.open(map,marker);
     });
 
     // this is where the pin actually gets added to the map.
@@ -186,9 +204,21 @@ function initializeMap() {
   callback(results, status) makes sure the search returned results for a location.
   If so, it creates a new map marker for that location.
   */
-  function callback(results, status) {
+  function callback_job(results, status) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
-      createMapMarker(results[0]);
+      createMapMarker(results[0], "job");
+    }
+  }
+
+  function callback_school(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      createMapMarker(results[0], "school");
+    }
+  }
+
+  function callback_house(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      createMapMarker(results[0], "house");
     }
   }
 
@@ -202,18 +232,36 @@ function initializeMap() {
     // actually searching for location data.
     var service = new google.maps.places.PlacesService(map);
 
-    // Iterates through the array of locations, creates a search object for each location
-    for (var place in locations) {
+    // Iterates through the array of job locations, creates a search object for each location
+    for (var place in locations.job) {
 
       // the search request object
       var request = {
-        query: locations[place]
+        query: locations.job[place]
       };
 
       // Actually searches the Google Maps API for location data and runs the callback
       // function with the search results after each search.
-      service.textSearch(request, callback);
+      service.textSearch(request, callback_job);
     }
+    // Iterates through the array of school locations
+    for (var place in locations.school) {
+
+      // the search request object
+      var request = {
+        query: locations.school[place]
+      };
+
+      // Actually searches the Google Maps API for location data and runs the callback
+      // function with the search results after each search.
+      service.textSearch(request, callback_school);
+    }
+    // the search request object for house location
+    var request = {
+      query: locations.house[0]
+    };
+    service.textSearch(request, callback_house);
+
   }
 
   // Sets the boundaries of the map based on pin locations
@@ -226,7 +274,8 @@ function initializeMap() {
   // the locations array
   pinPoster(locations);
 
-}
+  }
+
 
 /*
 Uncomment the code below when you're ready to implement a Google Map!

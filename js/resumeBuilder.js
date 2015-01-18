@@ -239,12 +239,12 @@ var work = {
 
 /*
 projects objects:
-projects: array of objects with
-title: string
-dates: string (works with a hyphen between them)
-description: string
-images: array with string urls
-display: function taking no parameters
+  projects: array of objects with
+  title: string
+  dates: string (works with a hyphen between them)
+  description: string
+  images: array with string urls
+  display: function taking no parameters
 */
 var projects = {
   "projects": [
